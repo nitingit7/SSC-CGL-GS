@@ -1,0 +1,556 @@
+<!DOCTYPE html>
+<html lang="en" class="scroll-smooth">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Interactive Guide to SSC CGL General Awareness (Glass UI)</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Lexend:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <!-- Chosen Palette: Serene Academia -->
+    <!-- Application Structure Plan: The SPA is designed as a strategic journey for an SSC CGL aspirant. It's broken into five logical, task-oriented sections navigated by a sticky header. 1. 'Understand': Visualizes the exam structure and topic weightage via charts and provides a static example of a topic breakdown. 2. 'Foundation': Organizes static books into interactive cards. 3. 'Dynamic': Focuses on Current Affairs resources. 4. 'Platforms': Presents coaching platforms in a comparable grid. 5. 'Strategy': The culmination, where users can select a profile (Beginner/Advanced) to view a detailed, pre-written study plan. All AI dependencies have been removed for offline use. -->
+    <!-- Visualization & Content Choices: 1. Exam Structure: Side-by-side cards for easy comparison. 2. Topic Weightage: Chart.js Doughnut Chart for visual priority setting. 3. Topic Breakdown: A static, pre-written example for "Static GK" replaces the AI feature, demonstrating the required depth. 4. Resource Recommendations: Interactive Cards (HTML/CSS/JS) to manage information flow. 5. Study Plans: Two comprehensive, pre-written plans for "Beginner" and "Advanced" users are toggled with JS, replacing the AI generation feature while maintaining interactivity. -->
+    <!-- CONFIRMATION: NO SVG graphics used. NO Mermaid JS used. -->
+    <script>
+        // Fixes the "white corner" bug in dark mode by applying the theme before the page loads.
+        if (localStorage.getItem('color-theme') === 'dark' || (!('color-theme' in localStorage) && window.matchMedia('(prefers-color-scheme: dark)').matches)) {
+            document.documentElement.classList.add('dark');
+        } else {
+            document.documentElement.classList.remove('dark');
+        }
+    </script>
+    <style>
+        body {
+            font-family: 'Lexend', sans-serif;
+            background-image: 
+                radial-gradient(at 0% 0%, hsla(253, 16%, 7%, 0.3) 0px, transparent 50%),
+                radial-gradient(at 98% 1%, hsla(225, 89%, 70%, 0.3) 0px, transparent 50%);
+        }
+        .dark body {
+             background-image: 
+                radial-gradient(at 0% 0%, hsla(253, 16%, 7%, 1) 0px, transparent 50%),
+                radial-gradient(at 98% 1%, hsla(225, 89%, 40%, 0.5) 0px, transparent 50%);
+        }
+        .chart-container {
+            position: relative;
+            width: 100%;
+            max-width: 450px;
+            margin-left: auto;
+            margin-right: auto;
+            height: 300px;
+            max-height: 400px;
+        }
+        @media (min-width: 768px) {
+            .chart-container {
+                height: 350px;
+            }
+        }
+        .nav-link {
+            transition: color 0.3s ease;
+        }
+        .card {
+            transition: transform 0.4s ease, box-shadow 0.4s ease;
+        }
+        .card:hover {
+            transform: translateY(-8px) scale(1.02);
+            box-shadow: 0 20px 25px -5px rgb(0 0 0 / 0.1), 0 8px 10px -6px rgb(0 0 0 / 0.1);
+        }
+        .tab-button.active {
+            background-color: #D97706 !important;
+            color: #FFFFFF !important;
+        }
+        .strategy-btn.active {
+            background-color: #16a34a !important;
+            color: white !important;
+            border-color: transparent !important;
+        }
+        .strategy-profile-btn.active {
+            background-color: #2563EB !important;
+            color: white !important;
+            border-color: transparent !important;
+        }
+        
+        /* Scroll Animation */
+        .scroll-animate {
+            opacity: 0;
+            transform: translateY(30px);
+            transition: opacity 0.8s cubic-bezier(0.25, 0.46, 0.45, 0.94), transform 0.8s cubic-bezier(0.25, 0.46, 0.45, 0.94);
+        }
+        .scroll-animate.is-visible {
+            opacity: 1;
+            transform: translateY(0);
+        }
+        
+        /* Glassmorphism */
+        .glass-card {
+            background: rgba(255, 255, 255, 0.3);
+            backdrop-filter: blur(12px);
+            -webkit-backdrop-filter: blur(12px);
+            border: 1px solid rgba(255, 255, 255, 0.18);
+        }
+        .dark .glass-card {
+            background: rgba(23, 28, 40, 0.4);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+        }
+        .glass-header {
+             background: rgba(255, 255, 255, 0.5);
+            backdrop-filter: blur(16px);
+            -webkit-backdrop-filter: blur(16px);
+        }
+        .dark .glass-header {
+            background: rgba(17, 24, 39, 0.6);
+        }
+    </style>
+    <script>
+        tailwind.config = {
+            darkMode: 'class',
+        }
+    </script>
+</head>
+<body class="bg-[#FDFBF7] dark:bg-gray-900 text-[#3D352E] dark:text-gray-300 antialiased transition-colors duration-500">
+
+    <header class="glass-header sticky top-0 z-50 border-b border-gray-200/50 dark:border-gray-700/50">
+        <nav class="container mx-auto px-6 py-3 flex justify-between items-center">
+            <h1 class="font-bold text-xl text-amber-700 dark:text-amber-500">SSC CGL GA Guide</h1>
+            <div class="hidden md:flex items-center space-x-8">
+                <a href="#understand" class="nav-link font-medium hover:text-amber-600 dark:hover:text-amber-400">Understand</a>
+                <a href="#foundation" class="nav-link font-medium hover:text-amber-600 dark:hover:text-amber-400">Foundation</a>
+                <a href="#dynamic" class="nav-link font-medium hover:text-amber-600 dark:hover:text-amber-400">Dynamic</a>
+                <a href="#platforms" class="nav-link font-medium hover:text-amber-600 dark:hover:text-amber-400">Platforms</a>
+                <a href="#strategy" class="nav-link font-medium hover:text-amber-600 dark:hover:text-amber-400">Strategy</a>
+            </div>
+            <div class="flex items-center">
+                 <button id="theme-toggle" type="button" class="text-gray-500 dark:text-gray-400 hover:bg-gray-100 dark:hover:bg-gray-700/50 focus:outline-none focus:ring-4 focus:ring-gray-200 dark:focus:ring-gray-700 rounded-lg text-sm p-2.5 ml-4">
+                    <svg id="theme-toggle-dark-icon" class="hidden w-5 h-5" fill="currentColor" viewBox="0 0 20 20" xmlns="http://www.w3.org/2000/svg"><path d="M17.293 13.293A8 8 0 016.707 2.707a8.001 8.001 0 1010.586 10.586z"></path></svg>
+                    <svg id="theme-toggle-light-icon" class="hidden w-5 h-5" fill="currentColor" viewBox="0 0 20 20" xmlns="http://www.w3.org/2000/svg"><path d="M10 2a1 1 0 011 1v1a1 1 0 11-2 0V3a1 1 0 011-1zm4 8a4 4 0 11-8 0 4 4 0 018 0zm-.464 4.95l.707.707a1 1 0 001.414-1.414l-.707-.707a1 1 0 00-1.414 1.414zm2.12-10.607a1 1 0 010 1.414l-.706.707a1 1 0 11-1.414-1.414l.707-.707a1 1 0 011.414 0zM17 11a1 1 0 100-2h-1a1 1 0 100 2h1zm-7 4a1 1 0 011 1v1a1 1 0 11-2 0v-1a1 1 0 011-1zM5.05 6.464A1 1 0 106.465 5.05l-.708-.707a1 1 0 00-1.414 1.414l.707.707zm1.414 8.486l-.707.707a1 1 0 01-1.414-1.414l.707-.707a1 1 0 011.414 1.414zM4 11a1 1 0 100-2H3a1 1 0 000 2h1z" fill-rule="evenodd" clip-rule="evenodd"></path></svg>
+                </button>
+                <div class="md:hidden ml-2">
+                    <select id="mobile-nav" class="bg-gray-50/50 dark:bg-gray-800/50 border border-gray-300 dark:border-gray-600 text-gray-900 dark:text-gray-300 text-sm rounded-lg focus:ring-amber-500 focus:border-amber-500 block w-full p-2.5">
+                        <option value="#understand">Understand</option>
+                        <option value="#foundation">Foundation</option>
+                        <option value="#dynamic">Dynamic</option>
+                        <option value="#platforms">Platforms</option>
+                        <option value="#strategy">Strategy</option>
+                    </select>
+                </div>
+            </div>
+        </nav>
+    </header>
+
+    <main class="container mx-auto px-6 py-8 md:py-12">
+        
+        <section class="text-center mb-16 scroll-animate">
+            <h2 class="text-4xl md:text-5xl font-extrabold mb-4 tracking-tight text-gray-800 dark:text-white">Mastering General Awareness for SSC CGL</h2>
+            <p class="max-w-3xl mx-auto text-lg text-gray-600 dark:text-gray-400">This guide helps you understand the exam, explore top resources, and build a personalized preparation plan.</p>
+        </section>
+
+        <section id="understand" class="mb-20 scroll-mt-20 scroll-animate">
+            <h3 class="text-3xl font-bold text-center mb-2 text-gray-800 dark:text-white">1. Understand the Battlefield</h3>
+            <p class="text-center text-gray-600 dark:text-gray-400 mb-12 max-w-2xl mx-auto">Before you prepare, you must understand the exam's structure and where to focus your energy. Use the tools below to get a data-driven overview.</p>
+            
+            <div class="grid md:grid-cols-2 gap-8 items-start">
+                <div class="glass-card p-6 rounded-xl shadow-lg">
+                    <h4 class="font-bold text-xl mb-4 text-center text-gray-800 dark:text-white">Topic Weightage: Where to Focus</h4>
+                    <p class="text-sm text-gray-600 dark:text-gray-400 mb-4 text-center">This chart shows the approximate number of questions from each topic. Hover over a section to see details. Notice the high importance of General Science and Static GK.</p>
+                    <div class="chart-container">
+                        <canvas id="topicWeightageChart"></canvas>
+                    </div>
+                </div>
+                <div class="glass-card p-6 rounded-xl shadow-lg">
+                    <h4 class="font-bold text-xl mb-4 text-center text-gray-800 dark:text-white">Exam Structure: Tier 1 vs. Tier 2</h4>
+                    <p class="text-sm text-gray-600 dark:text-gray-400 mb-4 text-center">The role of GA changes significantly between tiers. What is qualifying in Tier 1 becomes merit-deciding in Tier 2 with higher stakes.</p>
+                    <div class="grid grid-cols-2 gap-4 text-center">
+                        <div class="bg-blue-900/10 dark:bg-blue-900/30 p-4 rounded-lg">
+                            <h5 class="font-bold text-lg text-gray-800 dark:text-white">Tier 1</h5>
+                            <p class="text-sm text-gray-600 dark:text-gray-400">Qualifying</p>
+                            <p class="text-2xl font-bold text-blue-600 dark:text-blue-400 mt-2">50</p>
+                            <p class="text-xs text-gray-500 dark:text-gray-400">Total Marks</p>
+                            <p class="text-sm font-semibold text-red-500 dark:text-red-400 mt-2">-0.50</p>
+                            <p class="text-xs text-gray-500 dark:text-gray-400">Negative Marking</p>
+                        </div>
+                        <div class="bg-green-900/10 dark:bg-green-900/30 p-4 rounded-lg">
+                            <h5 class="font-bold text-lg text-gray-800 dark:text-white">Tier 2</h5>
+                            <p class="text-sm text-gray-600 dark:text-gray-400">Merit Deciding</p>
+                            <p class="text-2xl font-bold text-green-600 dark:text-green-400 mt-2">75</p>
+                            <p class="text-xs text-gray-500 dark:text-gray-400">Total Marks</p>
+                            <p class="text-sm font-semibold text-red-600 dark:text-red-400 mt-2">-1.00</p>
+                            <p class="text-xs text-gray-500 dark:text-gray-400">Negative Marking</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="mt-12 glass-card p-6 rounded-xl shadow-lg">
+                <h4 class="font-bold text-xl mb-4 text-center text-gray-800 dark:text-white">Example Topic Breakdown: Static GK</h4>
+                <p class="text-sm text-gray-600 dark:text-gray-400 mb-4 text-center max-w-lg mx-auto">To score well, you must break down broad subjects into smaller, manageable parts. Here is an example breakdown for the high-yield "Static GK" topic.</p>
+                <div class="max-w-md mx-auto text-gray-700 dark:text-gray-300 bg-black/5 dark:bg-black/20 p-4 rounded-lg">
+                    <ul class="list-disc list-inside space-y-2">
+                        <li><strong>Art & Culture:</strong> Famous Temples, Classical & Folk Dances, Festivals, Paintings.</li>
+                        <li><strong>Awards & Honors:</strong> National Awards (Bharat Ratna, Padma Awards), Nobel Prizes, Sports Awards.</li>
+                        <li><strong>Important Days & Dates:</strong> National and International days with their themes.</li>
+                        <li><strong>Books & Authors:</strong> Historical and recent famous books.</li>
+                        <li><strong>Geography:</strong> National Parks, Wildlife Sanctuaries, Major Rivers and Dams, Superlatives (Largest, Longest).</li>
+                        <li><strong>Organizations:</strong> Headquarters of National & International Organizations (UN, IMF, WHO).</li>
+                        <li><strong>Sports:</strong> Terminology, Trophies, Famous Personalities.</li>
+                    </ul>
+                </div>
+            </div>
+        </section>
+
+        <section id="foundation" class="mb-20 scroll-mt-20 scroll-animate">
+            <h3 class="text-3xl font-bold text-center mb-2 text-gray-800 dark:text-white">2. Build Your Foundation: Static GK</h3>
+            <p class="text-center text-gray-600 dark:text-gray-400 mb-12 max-w-2xl mx-auto">Static subjects are the bedrock of your preparation. Using the right books in the right order is crucial. Start with fundamentals, then move to factual consolidation and practice. Click on each tab to learn about the recommended resource type.</p>
+            
+            <div class="glass-card p-6 rounded-xl shadow-lg">
+                <div class="mb-6 flex justify-center flex-wrap gap-2">
+                    <button data-tab="foundation-tab" data-target="ncert" class="tab-button active bg-white/50 dark:bg-black/20 px-4 py-2 text-sm font-medium rounded-md transition-colors">Foundation (NCERTs)</button>
+                    <button data-tab="foundation-tab" data-target="lucent" class="tab-button bg-white/50 dark:bg-black/20 px-4 py-2 text-sm font-medium rounded-md transition-colors">Revision (Lucent's)</button>
+                    <button data-tab="foundation-tab" data-target="advanced" class="tab-button bg-white/50 dark:bg-black/20 px-4 py-2 text-sm font-medium rounded-md transition-colors">Advanced (Selective)</button>
+                    <button data-tab="foundation-tab" data-target="pyq" class="tab-button bg-white/50 dark:bg-black/20 px-4 py-2 text-sm font-medium rounded-md transition-colors">Practice (PYQs)</button>
+                </div>
+
+                <div id="foundation-content" class="min-h-[200px]">
+                    <div id="ncert" class="tab-content">
+                        <h4 class="font-bold text-xl mb-2 text-gray-800 dark:text-white">The Cornerstone: NCERTs (Class 6-10)</h4>
+                        <p class="text-gray-700 dark:text-gray-300"><strong>Purpose:</strong> Build fundamental conceptual clarity. Don't skip this step! <br><strong>How to Use:</strong> Read thoroughly to create a mental framework before moving to dense fact-based books. They explain topics as stories, making knowledge easier to retain. Many direct questions come from here.</p>
+                    </div>
+                    <div id="lucent" class="tab-content hidden">
+                        <h4 class="font-bold text-xl mb-2 text-gray-800 dark:text-white">The Compendium: Lucent's General Knowledge</h4>
+                        <p class="text-gray-700 dark:text-gray-300"><strong>Purpose:</strong> Factual consolidation and rapid revision. <br><strong>How to Use:</strong> Use *after* building a base with NCERTs. Its dense, point-based format is perfect for revising facts and filling knowledge gaps, but overwhelming for beginners.</p>
+                    </div>
+                    <div id="advanced" class="tab-content hidden">
+                        <h4 class="font-bold text-xl mb-2 text-gray-800 dark:text-white">The Edge: Advanced Subject Books</h4>
+                        <p class="text-gray-700 dark:text-gray-300"><strong>Purpose:</strong> Gain a competitive edge in specific subjects. <br><strong>How to Use:</strong> Do not read cover-to-cover. Use the syllabus and PYQs to perform *selective reading* of high-yield chapters from books like M. Laxmikant (Polity) or Spectrum (History).</p>
+                    </div>
+                    <div id="pyq" class="tab-content hidden">
+                        <h4 class="font-bold text-xl mb-2 text-gray-800 dark:text-white">The Reality Check: Previous Year Questions (PYQs)</h4>
+                        <p class="text-gray-700 dark:text-gray-300"><strong>Purpose:</strong> Practice and understand the examiner's mindset. <br><strong>How to Use:</strong> Use books from Pinnacle or Kiran. Solve questions topic-wise right after studying a topic. This helps identify recurring themes and the required depth of knowledge.</p>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <section id="dynamic" class="mb-20 scroll-mt-20 scroll-animate">
+            <h3 class="text-3xl font-bold text-center mb-2 text-gray-800 dark:text-white">3. Master the Dynamic: Current Affairs</h3>
+            <p class="text-center text-gray-600 dark:text-gray-400 mb-12 max-w-2xl mx-auto">Current Affairs is fluid and requires a consistent, multi-pronged approach. Combine daily learning with periodic revision to stay on top of recent events. Explore the recommended methods below.</p>
+            <div class="grid md:grid-cols-3 gap-8">
+                <div class="card glass-card p-6 rounded-xl shadow-lg">
+                    <h4 class="font-bold text-xl mb-2 text-gray-800 dark:text-white">Daily Ritual</h4>
+                    <p class="text-gray-700 dark:text-gray-300">Read a good newspaper like The Hindu or Indian Express daily. This not only covers news but also improves your English comprehension skills. Link current events to your static syllabus.</p>
+                </div>
+                <div class="card glass-card p-6 rounded-xl shadow-lg">
+                    <h4 class="font-bold text-xl mb-2 text-gray-800 dark:text-white">Monthly Roundup</h4>
+                    <p class="text-gray-700 dark:text-gray-300">Follow one or two well-curated monthly PDF compilations from platforms like Testbook or AffairsCloud. Quality curation that filters out irrelevant news is key.</p>
+                </div>
+                <div class="card glass-card p-6 rounded-xl shadow-lg">
+                    <h4 class="font-bold text-xl mb-2 text-gray-800 dark:text-white">Visual Edge</h4>
+                    <p class="text-gray-700 dark:text-gray-300">Use YouTube strategically. Follow an analysis channel (e.g., StudyIQ) for deep understanding and an exam-focused channel (e.g., Percham Classes) for rapid revision of facts before the exam.</p>
+                </div>
+            </div>
+        </section>
+
+        <section id="platforms" class="mb-20 scroll-mt-20 scroll-animate">
+            <h3 class="text-3xl font-bold text-center mb-2 text-gray-800 dark:text-white">4. Choose Your Platform: Online Ecosystems</h3>
+            <p class="text-center text-gray-600 dark:text-gray-400 mb-12 max-w-2xl mx-auto">Online platforms offer end-to-end preparation solutions. The best choice depends on your learning style, budget, and needs. Compare the leaders in the field to find your fit.</p>
+            <div class="grid sm:grid-cols-2 lg:grid-cols-3 gap-6">
+                 <div class="card glass-card p-6 rounded-xl shadow-lg flex flex-col">
+                    <h4 class="font-bold text-xl mb-2 text-gray-800 dark:text-white">Adda247</h4>
+                    <p class="text-gray-700 dark:text-gray-300 text-sm flex-grow">Known for its "Mahapack" model, offering vast content for multiple exams. Ideal for those preparing for SSC and other government exams simultaneously.</p>
+                    <span class="mt-4 text-xs font-semibold text-amber-700 bg-amber-100 dark:text-amber-300 dark:bg-amber-900/50 px-2 py-1 rounded-full self-start">USP: Volume & Value</span>
+                </div>
+                <div class="card glass-card p-6 rounded-xl shadow-lg flex flex-col">
+                    <h4 class="font-bold text-xl mb-2 text-gray-800 dark:text-white">Physics Wallah (PW)</h4>
+                    <p class="text-gray-700 dark:text-gray-300 text-sm flex-grow">Focuses on affordability and structured foundation batches, replicating a disciplined online classroom. Great for budget-conscious students.</p>
+                     <span class="mt-4 text-xs font-semibold text-blue-700 bg-blue-100 dark:text-blue-300 dark:bg-blue-900/50 px-2 py-1 rounded-full self-start">USP: Affordability & Structure</span>
+                </div>
+                <div class="card glass-card p-6 rounded-xl shadow-lg flex flex-col">
+                    <h4 class="font-bold text-xl mb-2 text-gray-800 dark:text-white">Unacademy</h4>
+                    <p class="text-gray-700 dark:text-gray-300 text-sm flex-grow">Subscription gives access to numerous educators, allowing you to choose teaching styles. Perfect for self-motivated learners who value flexibility.</p>
+                     <span class="mt-4 text-xs font-semibold text-green-700 bg-green-100 dark:text-green-300 dark:bg-green-900/50 px-2 py-1 rounded-full self-start">USP: Choice & Flexibility</span>
+                </div>
+                <div class="card glass-card p-6 rounded-xl shadow-lg flex flex-col">
+                    <h4 class="font-bold text-xl mb-2 text-gray-800 dark:text-white">Testbook</h4>
+                    <p class="text-gray-700 dark:text-gray-300 text-sm flex-grow">Its standout "Testbook Pass" offers a massive repository of mock tests with detailed analytics. The top choice for practice-oriented aspirants.</p>
+                     <span class="mt-4 text-xs font-semibold text-purple-700 bg-purple-100 dark:text-purple-300 dark:bg-purple-900/50 px-2 py-1 rounded-full self-start">USP: Practice & Analysis</span>
+                </div>
+                <div class="card glass-card p-6 rounded-xl shadow-lg flex flex-col">
+                    <h4 class="font-bold text-xl mb-2 text-gray-800 dark:text-white">Vidya Guru</h4>
+                    <p class="text-gray-700 dark:text-gray-300 text-sm flex-grow">Emphasizes faculty interaction and offers unique Pen Drive courses for offline access. Suits those with poor connectivity or who prefer traditional teaching.</p>
+                     <span class="mt-4 text-xs font-semibold text-red-700 bg-red-100 dark:text-red-300 dark:bg-red-900/50 px-2 py-1 rounded-full self-start">USP: Faculty & Offline Access</span>
+                </div>
+            </div>
+        </section>
+
+        <section id="strategy" class="scroll-mt-20 scroll-animate">
+            <h3 class="text-3xl font-bold text-center mb-2 text-gray-800 dark:text-white">5. Craft Your Personalized Strategy</h3>
+            <p class="text-center text-gray-600 dark:text-gray-400 mb-12 max-w-2xl mx-a">This is where it all comes together. Select a plan tailored to your level, then build your resource stack.</p>
+
+            <div class="glass-card p-6 md:p-8 rounded-xl shadow-lg">
+                <div class="text-center mb-8">
+                    <h4 class="font-semibold text-lg mb-3 text-gray-800 dark:text-white">Step 1: Select Your Study Plan</h4>
+                    <p class="text-sm text-gray-600 dark:text-gray-400 max-w-xl mx-auto mb-4">Select your preparation level to see a detailed, month-by-month study plan.</p>
+                    <div class="flex justify-center gap-4">
+                        <button data-strategy="beginner" class="strategy-btn active border-2 border-transparent px-6 py-2 rounded-lg font-medium transition">Beginner</button>
+                        <button data-strategy="advanced" class="strategy-btn border-2 border-gray-300 dark:border-gray-600 px-6 py-2 rounded-lg font-medium transition">Advanced</button>
+                    </div>
+                </div>
+
+                <div id="strategy-content" class="mb-10 p-4 bg-black/5 dark:bg-black/20 rounded-lg min-h-[250px]">
+                    <div id="beginner-plan">
+                        <h5 class="font-bold text-xl mb-3 text-gray-800 dark:text-white">Beginner's 6-Month Blueprint</h5>
+                        <div class="prose prose-sm max-w-none text-gray-700 dark:text-gray-300">
+                            <p><strong>Months 1-3: Building the Foundation</strong></p>
+                            <ul class="list-disc list-inside space-y-1">
+                                <li>Focus on conceptual clarity. Read NCERTs (Class 6-10) for History, Geography, and Science like a story.</li>
+                                <li>For Polity, follow a quality YouTube playlist or a basic textbook.</li>
+                                <li>Start a daily habit of reading a newspaper (e.g., The Hindu) for 30 minutes to build a base for Current Affairs.</li>
+                                <li>Goal: Understand the 'why' behind facts, not just memorizing them.</li>
+                            </ul>
+                            <p class="mt-3"><strong>Months 4-5: Consolidation & Practice</strong></p>
+                            <ul class="list-disc list-inside space-y-1">
+                                <li>Begin revising topics using Lucent's General Knowledge book. Use it to fill gaps and structure your knowledge.</li>
+                                <li>Start solving Previous Year Questions (PYQs) from a topic-wise book (like Kiran or Pinnacle).</li>
+                                <li>After studying a topic (e.g., the Mughal Empire), immediately solve all PYQs related to it. This connects theory with application.</li>
+                                <li>Start following a monthly Current Affairs PDF compilation.</li>
+                            </ul>
+                             <p class="mt-3"><strong>Month 6: Revision & Mock Tests</strong></p>
+                            <ul class="list-disc list-inside space-y-1">
+                                <li>Dedicate this month to intensive revision of all subjects.</li>
+                                <li>Attempt 2-3 sectional GA mock tests per week. Analyze your mistakes thoroughly.</li>
+                                <li>Focus on revising high-yield Static GK topics and the last 6 months of Current Affairs.</li>
+                            </ul>
+                        </div>
+                    </div>
+                    <div id="advanced-plan" class="hidden">
+                        <h5 class="font-bold text-xl mb-3 text-gray-800 dark:text-white">Advanced 3-Month Revision Plan</h5>
+                        <div class="prose prose-sm max-w-none text-gray-700 dark:text-gray-300">
+                            <p><strong>Phase 1 (First 45 Days): Mock-Centric Analysis</strong></p>
+                            <ul class="list-disc list-inside space-y-1">
+                                <li>Attempt a full-length mock test every alternate day.</li>
+                                <li>The most crucial part is the analysis. Spend 2-3 hours analyzing every question in the GA section, not just the ones you got wrong.</li>
+                                <li>Maintain an error log: note down topics where you consistently make mistakes or guess incorrectly.</li>
+                                <li>Your revision should be driven by this error log. Revise only those specific weak topics from Lucent's or your notes.</li>
+                            </ul>
+                            <p class="mt-3"><strong>Phase 2 (Next 30 Days): Targeted Revision & CA Blitz</strong></p>
+                            <ul class="list-disc list-inside space-y-1">
+                                <li>Increase mock frequency to one per day if possible.</li>
+                                <li>Shift your Current Affairs focus to intensive revision. Watch "Last 6 Months" compilation videos and quickly go through monthly PDFs.</li>
+                                <li>Create short, crisp notes for volatile topics like dates, awards, and appointments for last-minute revision.</li>
+                            </ul>
+                             <p class="mt-3"><strong>Phase 3 (Last 15 Days): Final Lap</strong></p>
+                            <ul class="list-disc list-inside space-y-1">
+                                <li>Do not learn any new material. Focus solely on revising what you already know.</li>
+                                <li>Review your error log and short notes multiple times.</li>
+                                <li>Stay calm and confident. Trust your preparation.</li>
+                            </ul>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="border-t border-gray-200/50 dark:border-gray-700/50 pt-8">
+                    <div class="text-center mb-6">
+                        <h4 class="font-semibold text-lg mb-3 text-gray-800 dark:text-white">Step 2: Build Your Resource Stack</h4>
+                        <p class="text-sm text-gray-600 dark:text-gray-400 max-w-xl mx-auto">Select the profile that best describes you to see a recommended combination of resources.</p>
+                    </div>
+                    <div class="flex justify-center flex-wrap gap-3 mb-8">
+                        <button data-profile="self-starter" class="strategy-profile-btn active border border-transparent px-4 py-2 rounded-md font-medium text-sm transition">Self-Disciplined (Low Budget)</button>
+                        <button data-profile="structured-learner" class="strategy-profile-btn border border-gray-300 dark:border-gray-600 px-4 py-2 rounded-md font-medium text-sm transition">Structured Learner (Mid Budget)</button>
+                        <button data-profile="practice-oriented" class="strategy-profile-btn border border-gray-300 dark:border-gray-600 px-4 py-2 rounded-md font-medium text-sm transition">Practice-Oriented (Mid Budget)</button>
+                        <button data-profile="all-in" class="strategy-profile-btn border border-gray-300 dark:border-gray-600 px-4 py-2 rounded-md font-medium text-sm transition">All-In Aspirant (No Constraints)</button>
+                    </div>
+
+                    <div id="resource-stack-output" class="grid sm:grid-cols-2 lg:grid-cols-4 gap-4 text-center">
+                        <!-- Content will be dynamically generated here -->
+                    </div>
+                </div>
+            </div>
+        </section>
+
+    </main>
+
+    <footer class="bg-gray-800/70 text-white mt-20">
+        <div class="container mx-auto px-6 py-4 text-center text-sm">
+            <p>Webpage by Nitin 2025</p>
+        </div>
+    </footer>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', function () {
+            
+            // --- Theme Toggler ---
+            const themeToggleBtn = document.getElementById('theme-toggle');
+            const themeToggleDarkIcon = document.getElementById('theme-toggle-dark-icon');
+            const themeToggleLightIcon = document.getElementById('theme-toggle-light-icon');
+            
+            // Show the correct icon on page load
+            if (document.documentElement.classList.contains('dark')) {
+                themeToggleLightIcon.classList.remove('hidden');
+            } else {
+                themeToggleDarkIcon.classList.remove('hidden');
+            }
+
+            themeToggleBtn.addEventListener('click', function() {
+                themeToggleDarkIcon.classList.toggle('hidden');
+                themeToggleLightIcon.classList.toggle('hidden');
+                document.documentElement.classList.toggle('dark');
+                
+                const theme = document.documentElement.classList.contains('dark') ? 'dark' : 'light';
+                localStorage.setItem('color-theme', theme);
+
+                // Manually trigger chart update on theme change
+                updateChartTheme();
+            });
+
+
+            // --- Chart.js ---
+            const topicWeightageData = {
+                labels: ['General Science', 'Static GK', 'Current Affairs', 'Polity', 'History', 'Geography', 'Economy'],
+                data: [6.5, 5, 4.5, 4.5, 4.5, 2.5, 2.5],
+                questions: ['5-8', '4-6', '4-5', '3-6', '3-6', '2-3', '2-3']
+            };
+
+            const ctx = document.getElementById('topicWeightageChart').getContext('2d');
+            let myChart = new Chart(ctx, {
+                type: 'doughnut',
+                data: {
+                    labels: topicWeightageData.labels,
+                    datasets: [{
+                        label: 'Approx. Questions',
+                        data: topicWeightageData.data,
+                        backgroundColor: ['#3b82f6', '#16a34a', '#f59e0b', '#9333ea', '#db2777', '#4f46e5', '#ea580c'],
+                        borderWidth: 0,
+                        hoverOffset: 25,
+                        hoverBorderWidth: 4,
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    cutout: '60%',
+                    animation: {
+                        animateScale: true,
+                        animateRotate: true
+                    },
+                    plugins: {
+                        legend: {
+                            position: 'bottom',
+                            labels: {
+                                font: { size: 12, family: "'Lexend', sans-serif" },
+                                boxWidth: 15,
+                                padding: 15,
+                            }
+                        },
+                        tooltip: {
+                            bodyFont: { family: "'Lexend', sans-serif" },
+                            titleFont: { family: "'Lexend', sans-serif" },
+                            callbacks: {
+                                label: function(context) {
+                                    let label = context.label || '';
+                                    if (label) { label += ': '; }
+                                    const questionRange = topicWeightageData.questions[context.dataIndex];
+                                    label += `${questionRange} questions`;
+                                    return label;
+                                }
+                            }
+                        }
+                    }
+                }
+            });
+            
+            function updateChartTheme() {
+                const isDark = document.documentElement.classList.contains('dark');
+                myChart.options.plugins.legend.labels.color = isDark ? '#d1d5db' : '#4b5563';
+                myChart.options.plugins.tooltip.titleColor = isDark ? '#ffffff' : '#000000';
+                myChart.options.plugins.tooltip.bodyColor = isDark ? '#d1d5db' : '#4b5563';
+                myChart.data.datasets[0].hoverBorderColor = isDark ? 'rgba(17, 24, 39, 1)' : 'rgba(253, 251, 247, 1)';
+                myChart.update();
+            }
+            updateChartTheme();
+
+
+            // --- Tab and Button Logic ---
+            const tabButtons = document.querySelectorAll('[data-tab="foundation-tab"]');
+            const tabContents = document.querySelectorAll('#foundation-content .tab-content');
+            tabButtons.forEach(button => {
+                button.addEventListener('click', () => {
+                    tabButtons.forEach(btn => btn.classList.remove('active'));
+                    button.classList.add('active');
+                    const targetId = button.dataset.target;
+                    tabContents.forEach(content => {
+                        content.classList.toggle('hidden', content.id !== targetId);
+                    });
+                });
+            });
+            
+            const strategyButtons = document.querySelectorAll('.strategy-btn');
+            strategyButtons.forEach(button => {
+                button.addEventListener('click', () => {
+                    strategyButtons.forEach(btn => {
+                        btn.classList.remove('active');
+                        btn.classList.add('border-gray-300', 'dark:border-gray-600');
+                        btn.classList.remove('border-transparent');
+                    });
+                    button.classList.add('active');
+                    button.classList.remove('border-gray-300', 'dark:border-gray-600');
+                    button.classList.add('border-transparent');
+
+                    const targetPlan = button.dataset.strategy;
+                    document.getElementById('beginner-plan').classList.toggle('hidden', targetPlan !== 'beginner');
+                    document.getElementById('advanced-plan').classList.toggle('hidden', targetPlan !== 'advanced');
+                });
+            });
+
+            const resourceStackData = {
+                'self-starter': { 'Foundational Book': 'NCERTs (Free PDFs)', 'Revision Book': 'Self-made notes + Lucent\'s GK', 'Current Affairs Source': 'YouTube + Free Monthly PDFs', 'Mock Test Platform': 'Free Mocks (Various)' },
+                'structured-learner': { 'Foundational Book': 'NCERTs + Online Course (e.g., PW)', 'Revision Book': 'Lucent\'s GK + Course Notes', 'Current Affairs Source': 'Course CA classes + Monthly PDF', 'Mock Test Platform': 'Integrated Test Series' },
+                'practice-oriented': { 'Foundational Book': 'NCERTs + Lucent\'s GK', 'Revision Book': 'Lucent\'s GK + PYQ Book', 'Current Affairs Source': 'YouTube Compilations + Testbook PDF', 'Mock Test Platform': 'Testbook Pass Pro (Primary)' },
+                'all-in': { 'Foundational Book': 'NCERTs + Full Course (e.g., Adda247)', 'Revision Book': 'Advanced Books (Selective) + Notes', 'Current Affairs Source': 'Course CA classes + Newspaper', 'Mock Test Platform': 'Premium Test Series' }
+            };
+
+            const profileButtons = document.querySelectorAll('.strategy-profile-btn');
+            const stackOutput = document.getElementById('resource-stack-output');
+
+            function updateResourceStack(profile) {
+                profileButtons.forEach(btn => {
+                    btn.classList.toggle('active', btn.dataset.profile === profile);
+                    btn.classList.toggle('border-gray-300', btn.dataset.profile !== profile);
+                    btn.classList.toggle('dark:border-gray-600', btn.dataset.profile !== profile);
+                    btn.classList.toggle('border-transparent', btn.dataset.profile === profile);
+                });
+                const stack = resourceStackData[profile];
+                stackOutput.innerHTML = '';
+                for (const [key, value] of Object.entries(stack)) {
+                    stackOutput.innerHTML += `<div class="bg-black/5 dark:bg-black/20 p-4 rounded-lg border border-white/10 dark:border-white/10"><h6 class="font-semibold text-sm text-gray-800 dark:text-gray-200">${key}</h6><p class="text-amber-700 dark:text-amber-500 font-medium mt-1 text-sm">${value}</p></div>`;
+                }
+            }
+
+            profileButtons.forEach(button => {
+                button.addEventListener('click', () => updateResourceStack(button.dataset.profile));
+            });
+            
+            updateResourceStack('self-starter');
+
+            const mobileNav = document.getElementById('mobile-nav');
+            mobileNav.addEventListener('change', (e) => { window.location.hash = e.target.value; });
+
+            // --- Scroll Animation Observer ---
+            const animatedElements = document.querySelectorAll('.scroll-animate');
+            const observer = new IntersectionObserver((entries) => {
+                entries.forEach(entry => {
+                    if (entry.isIntersecting) {
+                        entry.target.classList.add('is-visible');
+                    }
+                });
+            }, {
+                threshold: 0.1
+            });
+
+            animatedElements.forEach(el => {
+                observer.observe(el);
+            });
+        });
+    </script>
+</body>
+</html>
